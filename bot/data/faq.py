@@ -27,7 +27,7 @@ FAQ_DATA: List[Dict[str, str]] = [
     },
     {
         "question": "Как связаться с поддержкой?",
-        "answer": "Вы можете связаться с нами:\n- Через бота командой /support\n- По телефону: +7 (XXX) XXX-XX-XX\n- По email: support@example.com"
+        "answer": "Вы можете связаться с нами:\n- По телефону: +7 (XXX) XXX-XX-XX\n- По email: support@yandex.ru"
     },
     {
         "question": "Есть ли скидки для постоянных клиентов?",
