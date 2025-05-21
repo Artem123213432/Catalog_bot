@@ -14,17 +14,17 @@ class SubscriptionMiddleware(BaseMiddleware):
         event: Message | CallbackQuery,
         data: Dict[str, Any]
     ) -> Any:
-        # Пропускаем проверку, если канал не настроен
+        
         if not Config.CHANNEL_USERNAME:
             logger.info("Канал не настроен, пропускаем проверку подписки.")
             return await handler(event, data)
 
-        # Пропускаем проверку для администраторов
+        
         if hasattr(Config, 'ADMIN_IDS') and event.from_user.id in Config.ADMIN_IDS:
             logger.info(f"Пользователь {event.from_user.id} является администратором, пропускаем проверку подписки.")
             return await handler(event, data)
 
-        # Проверяем подписку только на канал (группа не обязательна)
+        
         channels = [Config.CHANNEL_USERNAME]
         bot = data["bot"]
         is_subscribed = await check_subscription(

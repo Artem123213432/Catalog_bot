@@ -23,7 +23,7 @@ class Category:
     name: str
     subcategories: List[Subcategory]
 
-# Пример данных (в реальном приложении данные будут храниться в базе данных)
+
 CATEGORIES = [
     Category(
         id=1,
@@ -36,18 +36,10 @@ CATEGORIES = [
                 products=[
                     Product(
                         id=1,
-                        name="iPhone 13",
+                        name="iPhone 16",
                         description="Новейший смартфон от Apple",
-                        price=799.99,
+                        price=70000.00,
                         image_url="https://avatars.mds.yandex.net/get-mpic/12363834/2a0000018e9ebc9f7a5e4a239d4e92a6bfe9/orig",
-                        subcategory_id=1
-                    ),
-                    Product(
-                        id=2,
-                        name="Samsung Galaxy S21",
-                        description="Флагманский смартфон от Samsung",
-                        price=699.99,
-                        image_url="https://example.com/s21.jpg",
                         subcategory_id=1
                     )
                 ]
@@ -61,8 +53,8 @@ CATEGORIES = [
                         id=3,
                         name="MacBook Pro",
                         description="Мощный ноутбук для профессионалов",
-                        price=1299.99,
-                        image_url="https://example.com/macbook.jpg",
+                        price=100000.00,
+                        image_url="https://p0.zoon.ru/preview/mveWbQUTM5jbgQHWJ9v85Q/2400x1500x75/1/4/9/original_633d9695e8989e426b048d70_6343df115b5091.14041840.jpg",
                         subcategory_id=2
                     )
                 ]
@@ -82,8 +74,8 @@ CATEGORIES = [
                         id=4,
                         name="Джинсы",
                         description="Классические джинсы",
-                        price=49.99,
-                        image_url="https://example.com/jeans.jpg",
+                        price=5000.00,
+                        image_url="https://odezhda.guru/wp-content/uploads/2018/08/Praktichnyj-denim.jpg",
                         subcategory_id=3
                     )
                 ]

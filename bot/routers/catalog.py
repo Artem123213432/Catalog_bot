@@ -1,5 +1,5 @@
 from aiogram import Router, F
-from aiogram.types import Message, CallbackQuery
+from aiogram.types import Message, CallbackQuery, InlineKeyboardMarkup, InlineKeyboardButton
 from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import default_state
@@ -12,7 +12,7 @@ from bot.keyboards.catalog import (
     get_products_keyboard,
     get_product_keyboard
 )
-from bot.routers import cart
+from bot.routers.cart import cmd_cart
 from bot.data.cart_storage import user_carts
 import logging
 
@@ -20,21 +20,18 @@ router = Router()
 logger = logging.getLogger(__name__)
 
 def find_category(category_id: int) -> tuple[Category, int]:
-    """Находит категорию по ID и возвращает её и индекс"""
     for i, category in enumerate(CATEGORIES):
         if category.id == category_id:
             return category, i
     raise ValueError(f"Category with id {category_id} not found")
 
 def find_subcategory(category: Category, subcategory_id: int) -> tuple[Subcategory, int]:
-    """Находит подкатегорию по ID и возвращает её и индекс"""
     for i, subcategory in enumerate(category.subcategories):
         if subcategory.id == subcategory_id:
             return subcategory, i
     raise ValueError(f"Subcategory with id {subcategory_id} not found")
 
 def find_product(subcategory: Subcategory, product_id: int) -> tuple[Product, int]:
-    """Находит товар по ID и возвращает его и индекс"""
     for i, product in enumerate(subcategory.products):
         if product.id == product_id:
             return product, i
@@ -42,7 +39,6 @@ def find_product(subcategory: Subcategory, product_id: int) -> tuple[Product, in
 
 @router.message(Command("catalog"))
 async def cmd_catalog(message: Message, state: FSMContext):
-    """Обработчик команды /catalog"""
     await state.set_state(CatalogStates.viewing_categories)
     await message.answer(
         "Выберите категорию:",
@@ -51,7 +47,6 @@ async def cmd_catalog(message: Message, state: FSMContext):
 
 @router.callback_query(CatalogStates.viewing_categories, F.data.startswith("category_"))
 async def process_category_selection(callback: CallbackQuery, state: FSMContext):
-    """Обработчик выбора категории"""
     category_id = int(callback.data.split("_")[1])
     category, _ = find_category(category_id)
     
@@ -65,7 +60,6 @@ async def process_category_selection(callback: CallbackQuery, state: FSMContext)
 
 @router.callback_query(CatalogStates.viewing_categories, F.data.startswith("categories_page_"))
 async def process_categories_pagination(callback: CallbackQuery):
-    """Обработчик пагинации категорий"""
     page = int(callback.data.split("_")[2])
     await callback.message.edit_text(
         "Выберите категорию:",
@@ -74,7 +68,6 @@ async def process_categories_pagination(callback: CallbackQuery):
 
 @router.callback_query(CatalogStates.viewing_subcategories, F.data.startswith("subcategory_"))
 async def process_subcategory_selection(callback: CallbackQuery, state: FSMContext):
-    """Обработчик выбора подкатегории"""
     subcategory_id = int(callback.data.split("_")[1])
     data = await state.get_data()
     category, _ = find_category(data["current_category_id"])
@@ -90,7 +83,6 @@ async def process_subcategory_selection(callback: CallbackQuery, state: FSMConte
 
 @router.callback_query(CatalogStates.viewing_subcategories, F.data.startswith("subcategories_page_"))
 async def process_subcategories_pagination(callback: CallbackQuery, state: FSMContext):
-    """Обработчик пагинации подкатегорий"""
     page = int(callback.data.split("_")[2])
     data = await state.get_data()
     category, _ = find_category(data["current_category_id"])
@@ -102,7 +94,6 @@ async def process_subcategories_pagination(callback: CallbackQuery, state: FSMCo
 
 @router.callback_query(CatalogStates.viewing_subcategories, F.data == "back_to_categories")
 async def process_back_to_categories(callback: CallbackQuery, state: FSMContext):
-    """Обработчик возврата к категориям"""
     await state.set_state(CatalogStates.viewing_categories)
     await callback.message.edit_text(
         "Выберите категорию:",
@@ -111,9 +102,6 @@ async def process_back_to_categories(callback: CallbackQuery, state: FSMContext)
 
 @router.callback_query(CatalogStates.viewing_products, F.data.startswith("product_"))
 async def process_product_selection(callback: CallbackQuery, state: FSMContext):
-    """
-    Обработчик выбора товара
-    """
     try:
         product_id = int(callback.data.split("_")[1])
         logger.info(f"Выбран товар с ID: {product_id}")
@@ -128,12 +116,12 @@ async def process_product_selection(callback: CallbackQuery, state: FSMContext):
         await state.set_state(CatalogStates.viewing_product)
         await state.update_data(current_product_id=product_id)
         
-        # Удаляем сообщение с товарами перед отправкой карточки товара
+        
         await callback.message.delete()
 
         await callback.message.answer_photo(
             photo=product.image_url,
-            caption=f"<b>{product.name}</b>\n\n{product.description}\n\nЦена: ${product.price}",
+            caption=f"<b>{product.name}</b>\n\n{product.description}\n\nЦена: {product.price} ₽",
             reply_markup=get_product_keyboard(product)
         )
         logger.info(f"Отправлена карточка товара: {product.name}")
@@ -146,12 +134,11 @@ async def process_product_selection(callback: CallbackQuery, state: FSMContext):
         )
         
     finally:
-        # Всегда отвечаем на callback, чтобы убрать часики загрузки
+        
         await callback.answer()
 
 @router.callback_query(CatalogStates.viewing_products, F.data.startswith("products_page_"))
 async def process_products_pagination(callback: CallbackQuery, state: FSMContext):
-    """Обработчик пагинации товаров"""
     page = int(callback.data.split("_")[2])
     data = await state.get_data()
     category, _ = find_category(data["current_category_id"])
@@ -164,7 +151,6 @@ async def process_products_pagination(callback: CallbackQuery, state: FSMContext
 
 @router.callback_query(CatalogStates.viewing_products, F.data == "back_to_subcategories")
 async def process_back_to_subcategories(callback: CallbackQuery, state: FSMContext):
-    """Обработчик возврата к подкатегориям"""
     data = await state.get_data()
     category, _ = find_category(data["current_category_id"])
     
@@ -174,53 +160,99 @@ async def process_back_to_subcategories(callback: CallbackQuery, state: FSMConte
         reply_markup=get_subcategories_keyboard(category.subcategories)
     )
 
-@router.callback_query(CatalogStates.viewing_product, F.data.startswith("add_to_cart_"))
-async def process_add_to_cart(callback: CallbackQuery, state: FSMContext):
-    """
-    Обработчик добавления товара в корзину
-    """
+
+def get_quantity_keyboard(product_id: int, quantity: int = 1) -> InlineKeyboardMarkup:
+    keyboard = [
+        [
+            InlineKeyboardButton(text="-", callback_data=f"decrease_quantity_{product_id}"),
+            InlineKeyboardButton(text=str(quantity), callback_data=f"quantity_{product_id}_{quantity}"),
+            InlineKeyboardButton(text="+", callback_data=f"increase_quantity_{product_id}")
+        ],
+        [
+            InlineKeyboardButton(text="❌ Отмена", callback_data="cancel_quantity")
+        ]
+    ]
+    return InlineKeyboardMarkup(inline_keyboard=keyboard)
+
+
+@router.callback_query(CatalogStates.viewing_product, F.data.startswith("choose_quantity_"))
+async def process_choose_quantity(callback: CallbackQuery, state: FSMContext):
+    product_id = int(callback.data.split("_")[2])
+    await state.update_data(quantity=1)
+    await callback.message.edit_reply_markup(reply_markup=get_quantity_keyboard(product_id))
+    await callback.answer()
+
+
+@router.callback_query(CatalogStates.viewing_product, F.data.startswith("increase_quantity_"))
+async def process_increase_quantity(callback: CallbackQuery, state: FSMContext):
+    product_id = int(callback.data.split("_")[2])
+    data = await state.get_data()
+    current_quantity = data.get("quantity", 1)
+    new_quantity = current_quantity + 1
+    await state.update_data(quantity=new_quantity)
+    await callback.message.edit_reply_markup(reply_markup=get_quantity_keyboard(product_id, new_quantity))
+    await callback.answer()
+
+
+@router.callback_query(CatalogStates.viewing_product, F.data.startswith("decrease_quantity_"))
+async def process_decrease_quantity(callback: CallbackQuery, state: FSMContext):
+    product_id = int(callback.data.split("_")[2])
+    data = await state.get_data()
+    current_quantity = data.get("quantity", 1)
+    new_quantity = max(1, current_quantity - 1)
+    await state.update_data(quantity=new_quantity)
+    await callback.message.edit_reply_markup(reply_markup=get_quantity_keyboard(product_id, new_quantity))
+    await callback.answer()
+
+
+@router.callback_query(CatalogStates.viewing_product, F.data.startswith("quantity_"))
+async def process_add_to_cart_with_quantity(callback: CallbackQuery, state: FSMContext):
     try:
-        # Получаем ID пользователя и информацию о товаре
         user_id = callback.from_user.id
-        product_id = int(callback.data.split("_")[3])
+        _, product_id, quantity = callback.data.split("_")
+        product_id = int(product_id)
+        quantity = int(quantity)
         data = await state.get_data()
         category, _ = find_category(data["current_category_id"])
         subcategory, _ = find_subcategory(category, data["current_subcategory_id"])
         product, _ = find_product(subcategory, product_id)
-        
-        # Инициализируем корзину пользователя, если её нет
         if user_id not in user_carts:
             user_carts[user_id] = []
-            
-        # Добавляем товар в корзину (можно добавить логику для количества, если нужно)
         user_carts[user_id].append({
             "id": product.id,
             "name": product.name,
             "price": product.price,
-            "quantity": 1 # Пока добавляем по одной штуке
+            "quantity": quantity
         })
-        
-        logger.info(f"Товар {product.name} (ID: {product.id}) добавлен в корзину пользователя {user_id}")
-
-        await callback.answer("Товар добавлен в корзину!", show_alert=True)
-        
+        await callback.message.edit_reply_markup(reply_markup=get_product_keyboard(product))
+        await callback.answer(f"Добавлено в корзину: {product.name} x{quantity}", show_alert=True)
     except Exception as e:
-        logger.error(f"Ошибка при добавлении товара в корзину: {e}", exc_info=True)
+        logger.error(f"Ошибка при добавлении товара с количеством: {e}", exc_info=True)
+        await callback.answer("Ошибка при добавлении товара. Попробуйте позже.", show_alert=True)
+
+
+@router.callback_query(CatalogStates.viewing_product, F.data == "cancel_quantity")
+async def process_cancel_quantity(callback: CallbackQuery):
+    await callback.message.edit_reply_markup(reply_markup=get_product_keyboard)
+    await callback.answer("Отменено")
+
+@router.callback_query(F.data == "view_cart")
+async def process_view_cart(callback: CallbackQuery):
+    try:
+        user_id = callback.from_user.id
+        cart = user_carts.get(user_id, [])
+        if not cart:
+            await callback.message.answer("Ваша корзина пуста.")
+            return
+        from bot.routers.cart import get_cart_keyboard
+        text = "\n".join([f"<b>{item['name']}</b> — {item['price']} ₽ x{item['quantity']}" for item in cart])
+        total = sum(item['price'] * item['quantity'] for item in cart)
+        await callback.message.answer(f"Ваша корзина:\n{text}\n\nИтого: {total} ₽", reply_markup=get_cart_keyboard(cart))
+    except Exception as e:
+        logger.error(f"Ошибка при переходе в корзину: {e}", exc_info=True)
         await callback.answer(
-            "Произошла ошибка при добавлении товара в корзину. Попробуйте позже.",
+            "Произошла ошибка при переходе в корзину. Попробуйте позже.",
             show_alert=True
         )
-
-@router.callback_query(CatalogStates.viewing_product, F.data == "back_to_products")
-async def process_back_to_products(callback: CallbackQuery, state: FSMContext):
-    """Обработчик возврата к товарам"""
-    data = await state.get_data()
-    category, _ = find_category(data["current_category_id"])
-    subcategory, _ = find_subcategory(category, data["current_subcategory_id"])
-    
-    await state.set_state(CatalogStates.viewing_products)
-    await callback.message.delete()
-    await callback.message.answer(
-        f"Подкатегория: {subcategory.name}\nВыберите товар:",
-        reply_markup=get_products_keyboard(subcategory.products)
-    ) 
+    finally:
+        await callback.answer() 

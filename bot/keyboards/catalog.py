@@ -3,7 +3,6 @@ from typing import List, Optional
 from bot.models.catalog import Category, Subcategory, Product
 
 def get_categories_keyboard(categories: List[Category], page: int = 0, items_per_page: int = 5) -> InlineKeyboardMarkup:
-    """Создает клавиатуру с категориями"""
     start_idx = page * items_per_page
     end_idx = start_idx + items_per_page
     current_categories = categories[start_idx:end_idx]
@@ -17,7 +16,7 @@ def get_categories_keyboard(categories: List[Category], page: int = 0, items_per
             )
         ])
     
-    # Добавляем кнопки навигации
+    
     nav_buttons = []
     if page > 0:
         nav_buttons.append(
@@ -39,7 +38,6 @@ def get_categories_keyboard(categories: List[Category], page: int = 0, items_per
     return InlineKeyboardMarkup(inline_keyboard=keyboard)
 
 def get_subcategories_keyboard(subcategories: List[Subcategory], page: int = 0, items_per_page: int = 5) -> InlineKeyboardMarkup:
-    """Создает клавиатуру с подкатегориями"""
     start_idx = page * items_per_page
     end_idx = start_idx + items_per_page
     current_subcategories = subcategories[start_idx:end_idx]
@@ -53,7 +51,7 @@ def get_subcategories_keyboard(subcategories: List[Subcategory], page: int = 0, 
             )
         ])
     
-    # Добавляем кнопки навигации
+    
     nav_buttons = []
     if page > 0:
         nav_buttons.append(
@@ -72,7 +70,7 @@ def get_subcategories_keyboard(subcategories: List[Subcategory], page: int = 0, 
     if nav_buttons:
         keyboard.append(nav_buttons)
     
-    # Добавляем кнопку возврата к категориям
+    
     keyboard.append([
         InlineKeyboardButton(
             text="🔙 К категориям",
@@ -83,7 +81,6 @@ def get_subcategories_keyboard(subcategories: List[Subcategory], page: int = 0, 
     return InlineKeyboardMarkup(inline_keyboard=keyboard)
 
 def get_products_keyboard(products: List[Product], page: int = 0, items_per_page: int = 5) -> InlineKeyboardMarkup:
-    """Создает клавиатуру с товарами"""
     start_idx = page * items_per_page
     end_idx = start_idx + items_per_page
     current_products = products[start_idx:end_idx]
@@ -92,12 +89,12 @@ def get_products_keyboard(products: List[Product], page: int = 0, items_per_page
     for product in current_products:
         keyboard.append([
             InlineKeyboardButton(
-                text=f"{product.name} - ${product.price}",
+                text=f"{product.name} - {product.price} ₽",
                 callback_data=f"product_{product.id}"
             )
         ])
     
-    # Добавляем кнопки навигации
+    
     nav_buttons = []
     if page > 0:
         nav_buttons.append(
@@ -116,7 +113,7 @@ def get_products_keyboard(products: List[Product], page: int = 0, items_per_page
     if nav_buttons:
         keyboard.append(nav_buttons)
     
-    # Добавляем кнопку возврата к подкатегориям
+    
     keyboard.append([
         InlineKeyboardButton(
             text="🔙 К подкатегориям",
@@ -127,17 +124,22 @@ def get_products_keyboard(products: List[Product], page: int = 0, items_per_page
     return InlineKeyboardMarkup(inline_keyboard=keyboard)
 
 def get_product_keyboard(product: Product) -> InlineKeyboardMarkup:
-    """Создает клавиатуру для отдельного товара"""
     keyboard = [
         [
             InlineKeyboardButton(
                 text="🛒 Добавить в корзину",
-                callback_data=f"add_to_cart_{product.id}"
+                callback_data=f"choose_quantity_{product.id}"
             )
         ],
         [
             InlineKeyboardButton(
-                text="🔙 К товарам",
+                text="📦 Перейти в корзину",
+                callback_data="view_cart"
+            )
+        ],
+        [
+            InlineKeyboardButton(
+                text="◀️ Назад к товарам",
                 callback_data="back_to_products"
             )
         ]

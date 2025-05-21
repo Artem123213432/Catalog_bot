@@ -2,9 +2,6 @@ from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from bot.config import Config
 
 def get_subscription_keyboard() -> InlineKeyboardMarkup:
-    """
-    Создает клавиатуру с кнопками для подписки на каналы
-    """
     buttons = [
         [
             InlineKeyboardButton(
@@ -14,7 +11,7 @@ def get_subscription_keyboard() -> InlineKeyboardMarkup:
         ]
     ]
     
-    # Добавляем кнопку группы только если GROUP_USERNAME определен
+    
     if Config.GROUP_USERNAME is not None:
         buttons.append([
             InlineKeyboardButton(
@@ -31,3 +28,17 @@ def get_subscription_keyboard() -> InlineKeyboardMarkup:
     ])
     
     return InlineKeyboardMarkup(inline_keyboard=buttons)
+
+def get_welcome_keyboard() -> InlineKeyboardMarkup:
+    keyboard = [
+        [
+            InlineKeyboardButton(text="📦 Каталог товаров", callback_data="show_catalog"),
+        ],
+        [
+            InlineKeyboardButton(text="🛒 Корзина", callback_data="show_cart"),
+        ],
+        [
+            InlineKeyboardButton(text="❓ FAQ", callback_data="show_faq"),
+        ]
+    ]
+    return InlineKeyboardMarkup(inline_keyboard=keyboard)

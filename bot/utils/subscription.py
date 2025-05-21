@@ -6,15 +6,12 @@ import logging
 logger = logging.getLogger(__name__)
 
 async def check_subscription(bot: Bot, user_id: int, channels: List[str]) -> bool:
-    """
-    Проверяет подписку пользователя на каналы/группы
-    """
     for channel in channels:
-        if not channel:  # Пропускаем пустые значения
+        if not channel:  
             continue
             
         try:
-            # Добавляем @ перед именем канала, если его нет
+            
             channel_id = f"@{channel}" if not channel.startswith("@") else channel
             logger.info(f"Проверка подписки на канал {channel_id}")
             

@@ -7,7 +7,7 @@ from uuid import uuid4
 
 router = Router()
 
-# Здесь могут быть обработчики для FAQ 
+
 
 @router.message(Command("faq"))
 async def show_faq(message: Message):
@@ -16,21 +16,25 @@ async def show_faq(message: Message):
         reply_markup=get_faq_keyboard()
     )
 
-@router.callback_query(F.data.startswith("faq_"))
+
+@router.callback_query(F.data == "faq_back")
+async def faq_back(callback: CallbackQuery):
+    await callback.answer()
+    await callback.message.edit_text(
+        "<b>Часто задаваемые вопросы:</b>",
+        reply_markup=get_faq_keyboard()
+    )
+
+
+@router.callback_query(F.data.startswith("faq_") & ~F.data.endswith("_back"))
 async def show_faq_answer(callback: CallbackQuery):
+    await callback.answer()
     idx = int(callback.data.split("_")[1])
     question = FAQ_DATA[idx]["question"]
     answer = FAQ_DATA[idx]["answer"]
     await callback.message.edit_text(
         f"<b>{question}</b>\n\n{answer}",
         reply_markup=get_faq_back_keyboard()
-    )
-
-@router.callback_query(F.data == "faq_back")
-async def faq_back(callback: CallbackQuery):
-    await callback.message.edit_text(
-        "<b>Часто задаваемые вопросы:</b>",
-        reply_markup=get_faq_keyboard()
     )
 
 @router.inline_query()

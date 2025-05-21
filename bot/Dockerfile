@@ -2,15 +2,20 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
-# Установка зависимостей
-COPY bot/requirements.txt ./requirements.txt
-RUN pip install --no-cache-dir -r requirements.txt
+# Установка системных зависимостей
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    && rm -rf /var/lib/apt/lists/*
 
-# Копирование кода
-COPY bot/ .
+# Копирование всего проекта для доступа к Django моделям
+COPY . /app/
+
+# Установка зависимостей
+COPY bot/requirements.txt /app/requirements.txt
+RUN pip install --no-cache-dir -r /app/requirements.txt
 
 # Создание директории для логов
 RUN mkdir -p /app/logs
 
 # Запуск бота
-CMD ["python", "main.py"] 
+CMD ["python", "/app/bot/main.py"] 
