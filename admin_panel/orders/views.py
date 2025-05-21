@@ -9,7 +9,7 @@ class OrderCreateAPIView(APIView):
         data = request.data
         client_data = data.get('client')
         items_data = data.get('items', [])
-        # Получаем или создаём клиента
+        
         client, _ = Client.objects.get_or_create(
             phone=client_data['phone'],
             defaults={
@@ -17,9 +17,9 @@ class OrderCreateAPIView(APIView):
                 'address': client_data.get('address', '')
             }
         )
-        # Создаём заказ
+        
         order = Order.objects.create(client=client)
-        # Добавляем товары
+        
         for item in items_data:
             product = Product.objects.get(id=item['product_id'])
             OrderItem.objects.create(order=order, product=product, quantity=item.get('quantity', 1))

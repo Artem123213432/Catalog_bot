@@ -13,10 +13,7 @@ class OrderAdmin(admin.ModelAdmin):
     list_display = ('id', 'client', 'created_at', 'is_paid')
     list_filter = ('created_at', 'is_paid')
     search_fields = ('client__username', 'client__full_name', 'client__telegram_id')
-    # Добавляем OrderItem inline, если нужно видеть товары в заказе прямо в списке заказов
-    # inlines = [OrderItemInline] 
 
-# Возможно, вам понадобится настроить отображение Mailing, если нужно
 @admin.register(Mailing)
 class MailingAdmin(admin.ModelAdmin):
     list_display = ('id', 'created_at', 'sent')
