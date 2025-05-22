@@ -9,14 +9,13 @@ RUN apt-get update && apt-get install -y \
 COPY admin_panel/requirements.txt /app/requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Создание директории для логов
 RUN mkdir -p /app/logs
 
-# Копирование кода проекта
 COPY admin_panel/ /app/admin_panel/
 
-# Устанавливаем рабочий каталог для запуска Django
+ENV PYTHONPATH=/app
+
 WORKDIR /app/admin_panel
 
-# Запуск Django
-CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"] 
+CMD python manage.py migrate && \
+    python manage.py runserver 0.0.0.0:8000 

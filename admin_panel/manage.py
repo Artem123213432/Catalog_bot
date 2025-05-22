@@ -6,9 +6,8 @@ import sys
 
 def main():
     """Run administrative tasks."""
-    # Добавляем текущий каталог в sys.path
     sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
-    os.environ.setdefault("DJANGO_SETTINGS_MODULE", "admin_panel.settings")
+    os.environ.setdefault("DJANGO_SETTINGS_MODULE", "settings")
     try:
         from django.core.management import execute_from_command_line
     except ImportError as exc:
