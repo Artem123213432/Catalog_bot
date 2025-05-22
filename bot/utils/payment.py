@@ -4,8 +4,8 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-SHOP_ID = '1091374'
-SECRET_KEY = 'test_yOgWlf-8N7ppnjyDNPpvCvxiYJWob1dX_zd4FuQPsIk'
+SHOP_ID = os.getenv('YOOKASSA_SHOP_ID')
+SECRET_KEY = os.getenv('YOOKASSA_SECRET_KEY')
 
 Configuration.account_id = SHOP_ID
 Configuration.secret_key = SECRET_KEY
